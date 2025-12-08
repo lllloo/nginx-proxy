@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   nginx-proxy:
     image: nginxproxy/nginx-proxy:latest
+    container_name: nginx-proxy
     restart: always
     ports:
       - "80:80"
@@ -20,10 +19,8 @@ services:
     depends_on:
       - nginx-proxy
     environment:
-      # 請修改為你的電子郵件，用於 Let's Encrypt 通知
-      - ACME_EMAIL=you@example.com
-      # 測試模式（staging）：在測試時取消註解下面一行以避免觸及 production rate limits
-      - ACME_CA_URI=https://acme-staging-v02.api.letsencrypt.org/directory
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL=${DEFAULT_EMAIL}
     volumes:
       - ./certs:/etc/nginx/certs:rw
       - ./vhost.d:/etc/nginx/vhost.d
@@ -31,4 +28,7 @@ services:
       - ./acme:/etc/acme.sh
       # acme-companion 需讀取 Docker socket 的真實位置
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    
+
+networks:
+  default:
+    name: nginx-proxy
