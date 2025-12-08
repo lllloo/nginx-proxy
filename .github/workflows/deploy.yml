@@ -1,0 +1,55 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main  # 當 main 分支有變更時觸發
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          script: |
+            # 檢查目錄是否已存在
+            if [ -d "nginx-server" ]; then
+              echo "目錄已存在，更新代碼..."
+              cd nginx-server
+              git pull origin main
+            else
+              echo "克隆代碼庫..."
+              git clone https://github.com/lllloo/nginx-proxy.git
+              cd nginx-server
+            fi
+            
+            # 在正確的目錄中執行 docker-compose 命令
+            echo "重啟 Docker 容器..."
+            docker-compose down
+            docker-compose up -d
+      
+      - name: Discord 部署成功通知
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "✅ 部署成功"
+          description: "nginx-proxy 已成功部署到 AWS EC2"
+          color: 0x00ff00
+          
+      - name: Discord 部署失敗通知
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "❌ 部署失敗"
+          description: "nginx-proxy 部署到 AWS EC2 時失敗"
+          color: 0xff0000
