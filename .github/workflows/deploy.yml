@@ -24,13 +24,14 @@ jobs:
             if [ -d "nginx-proxy" ]; then
               echo "目錄已存在，更新代碼..."
               cd nginx-proxy
-              git pull origin main
+              git fetch --all --prune
+              git reset --hard origin/main
             else
               echo "克隆代碼庫..."
-              git clone https://github.com/lllloo/nginx-proxy.git
+              git clone --depth 1 git@github.com:lllloo/nginx-proxy.git
               cd nginx-proxy
             fi
-            
+
             # 在正確的目錄中執行 docker-compose 命令
             echo "重啟 Docker 容器..."
             docker-compose down
