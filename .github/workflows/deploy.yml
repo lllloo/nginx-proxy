@@ -3,7 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main  # 當 main 分支有變更時觸發
+      - main # 當 main 分支有變更時觸發
 
 jobs:
   deploy:
@@ -40,21 +40,21 @@ jobs:
             echo "重啟 Docker 容器 for $REPO_NAME..."
             docker-compose down
             docker-compose up -d
-      
+
       - name: Discord 部署成功通知
         if: success()
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "✅ 部署成功"
-          description: "nginx-proxy 已成功部署到 AWS EC2"
+          title: '✅ 部署成功'
+          description: '${{ github.event.repository.name }} 已成功部署到 AWS EC2'
           color: 0x00ff00
-          
+
       - name: Discord 部署失敗通知
         if: failure()
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "❌ 部署失敗"
-          description: "nginx-proxy 部署到 AWS EC2 時失敗"
+          title: '❌ 部署失敗'
+          description: '${{ github.event.repository.name }} 部署到 AWS EC2 時失敗'
           color: 0xff0000
