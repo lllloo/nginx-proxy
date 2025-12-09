@@ -1,6 +1,6 @@
 services:
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:latest
+    image: nginxproxy/nginx-proxy:1.9
     container_name: nginx-proxy
     restart: always
     ports:
@@ -8,13 +8,15 @@ services:
       - "443:443"
     volumes:
       - ./certs:/etc/nginx/certs:ro
-      - ./vhost.d:/etc/nginx/vhost.d
+      - ./vhost:/etc/nginx/vhost.d
       - ./html:/usr/share/nginx/html:ro
       # 將 Docker socket 掛載到 /tmp/docker.sock，這是 nginx-proxy 使用的位置
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      # 日誌目錄
+      - ./logs/nginx:/var/log/nginx
 
   acme-companion:
-    image: nginxproxy/acme-companion:latest
+    image: nginxproxy/acme-companion:2.6
     restart: always
     depends_on:
       - nginx-proxy
@@ -23,7 +25,7 @@ services:
       - DEFAULT_EMAIL=${DEFAULT_EMAIL}
     volumes:
       - ./certs:/etc/nginx/certs:rw
-      - ./vhost.d:/etc/nginx/vhost.d
+      - ./vhost:/etc/nginx/vhost.d
       - ./html:/usr/share/nginx/html:rw
       - ./acme:/etc/acme.sh
       # acme-companion 需讀取 Docker socket 的真實位置
